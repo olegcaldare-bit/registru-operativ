@@ -27,7 +27,7 @@ security = HTTPBearer()
 async def startup():
     init_db()
 
-# ÄÄÄ RUTA PRINCIPALA (ROOT) ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+# Ã„Ã„Ã„ RUTA PRINCIPALA (ROOT) Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„
 # Aceasta ruta previne eroarea 404 pe Render.com
 
 @app.get("/")
@@ -39,7 +39,7 @@ def read_root():
         "documentation": "/docs"
     }
 
-# ÄÄÄ AUTH ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+# Ã„Ã„Ã„ AUTH Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„
 
 @app.post("/auth/login", response_model=schemas.LoginResponse)
 def login(data: schemas.LoginRequest):
@@ -64,7 +64,7 @@ def get_current_user(creds: HTTPAuthorizationCredentials = Depends(security)):
         raise HTTPException(status_code=401, detail="Sesiune expirata")
     return user
 
-# ÄÄÄ NOMENCLATOARE ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+# Ã„Ã„Ã„ NOMENCLATOARE Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„
 
 @app.get("/nomenclator/persoane")
 def get_persoane(current_user=Depends(get_current_user)):
@@ -120,7 +120,7 @@ def delete_tip_lucrare(id: int, current_user=Depends(get_current_user)):
     crud.delete_tip_lucrare(db, id)
     return {"ok": True}
 
-# ÄÄÄ FI?E ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+# Ã„Ã„Ã„ FI?E Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„
 
 @app.get("/fise")
 def get_fise(luna: Optional[int] = None, an: Optional[int] = None, current_user=Depends(get_current_user)):
@@ -190,11 +190,16 @@ def finalizeaza_lucrarea(id: int, data: schemas.SemnareFinal, current_user=Depen
         raise HTTPException(status_code=400, detail="Lucrarea nu a fost inceputa")
     return crud.finalizeaza_lucrarea(db, id, current_user["id"], data.confirmat)
 
-# ÄÄÄ PDF ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+# Ã„Ã„Ã„ PDF Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„
 
 @app.get("/pdf/lunar")
-def pdf_lunar(luna: int, an: int, current_user=Depends(get_current_user)):
+def pdf_lunar(luna: int, an: int, token: str, current_user=None): # AcceptÄƒm token direct
     db = get_db()
+    # VerificÄƒm manual sesiunea deoarece token-ul vine Ã®n URL
+    user = crud.get_session_user(db, token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Sesiune invalidÄƒ")
+        
     fise = crud.get_fise(db, luna, an)
     pdf_bytes = generate_monthly_pdf(fise, luna, an)
     return StreamingResponse(
@@ -204,11 +209,15 @@ def pdf_lunar(luna: int, an: int, current_user=Depends(get_current_user)):
     )
 
 @app.get("/pdf/fisa/{id}")
-def pdf_fisa(id: int, current_user=Depends(get_current_user)):
+def pdf_fisa(id: int, token: str, current_user=None): # AcceptÄƒm token direct
     db = get_db()
+    user = crud.get_session_user(db, token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Sesiune invalidÄƒ")
+
     fisa = crud.get_fisa(db, id)
     if not fisa:
-        raise HTTPException(status_code=404, detail="Fi?a nu exista")
+        raise HTTPException(status_code=404, detail="FiÈ™a nu existÄƒ")
     pdf_bytes = generate_fisa_pdf(fisa)
     return StreamingResponse(
         io.BytesIO(pdf_bytes),
@@ -216,7 +225,7 @@ def pdf_fisa(id: int, current_user=Depends(get_current_user)):
         headers={"Content-Disposition": f"inline; filename=fisa_{id}.pdf"}
     )
 
-# ÄÄÄ UTILIZATORI (admin) ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+# Ã„Ã„Ã„ UTILIZATORI (admin) Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„Ã„
 
 @app.get("/utilizatori")
 def get_utilizatori(current_user=Depends(get_current_user)):
