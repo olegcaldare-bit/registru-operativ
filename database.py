@@ -1,15 +1,13 @@
-import sqlite3
 import os
 import hashlib
-from datetime import datetime
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
-DB_PATH = os.environ.get("DB_PATH", "registru.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA foreign_keys=ON")
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    conn.autocommit = False
     return conn
 
 def hash_password(password: str) -> str:
@@ -17,40 +15,45 @@ def hash_password(password: str) -> str:
 
 def init_db():
     db = get_db()
-    db.executescript("""
+    cur = db.cursor()
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS utilizatori (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             nume_complet TEXT NOT NULL,
             parola_hash TEXT NOT NULL,
             rol TEXT NOT NULL CHECK(rol IN ('admin','emitent','admitent')),
             activ INTEGER DEFAULT 1,
             creat_la TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS sesiuni (
             token TEXT PRIMARY KEY,
             utilizator_id INTEGER NOT NULL,
             creat_la TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(utilizator_id) REFERENCES utilizatori(id)
-        );
-
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS persoane (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             nume_complet TEXT NOT NULL,
             grupa_securitate TEXT,
             functia TEXT,
             activ INTEGER DEFAULT 1
-        );
-
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS tipuri_lucrari (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             denumire TEXT NOT NULL,
             activ INTEGER DEFAULT 1
-        );
-
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS fise (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             nr_ordine INTEGER NOT NULL,
             luna INTEGER NOT NULL,
             an INTEGER NOT NULL,
@@ -68,45 +71,41 @@ def init_db():
             ora_sfarsit TIMESTAMP,
             semnat_sfarsit_de INTEGER,
             semnat_sfarsit_la TIMESTAMP,
-            creat_la TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(sef_lucrari_id) REFERENCES persoane(id),
-            FOREIGN KEY(admitent_id) REFERENCES persoane(id),
-            FOREIGN KEY(tip_lucrare_id) REFERENCES tipuri_lucrari(id),
-            FOREIGN KEY(emis_de) REFERENCES utilizatori(id)
-        );
-
+            creat_la TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS fisa_membri (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             fisa_id INTEGER NOT NULL,
-            persoana_id INTEGER NOT NULL,
-            FOREIGN KEY(fisa_id) REFERENCES fise(id),
-            FOREIGN KEY(persoana_id) REFERENCES persoane(id)
-        );
+            persoana_id INTEGER NOT NULL
+        )
     """)
 
-    # Insert default admin if not exists
-    existing = db.execute("SELECT id FROM utilizatori WHERE username='admin'").fetchone()
-    if not existing:
-        db.execute(
-            "INSERT INTO utilizatori (username, nume_complet, parola_hash, rol) VALUES (?,?,?,?)",
+    cur.execute("SELECT id FROM utilizatori WHERE username='admin'")
+    if not cur.fetchone():
+        cur.execute(
+            "INSERT INTO utilizatori (username, nume_complet, parola_hash, rol) VALUES (%s,%s,%s,%s)",
             ("admin", "Administrator", hash_password("admin123"), "admin")
         )
-        # Sample data
-        db.executescript("""
-            INSERT OR IGNORE INTO persoane (nume_complet, grupa_securitate, functia) VALUES
-                ('Ion Popescu', 'IV', 'Inginer sector'),
-                ('Maria Ionescu', 'III', 'Electrician'),
-                ('Vasile Rusu', 'IV', 'Șef echipă'),
-                ('Alexandru Popa', 'III', 'Electrician'),
-                ('Nicolae Botnaru', 'V', 'Admitent');
+        for p in [
+            ('Ion Popescu', 'IV', 'Inginer sector'),
+            ('Maria Ionescu', 'III', 'Electrician'),
+            ('Vasile Rusu', 'IV', 'Șef echipă'),
+            ('Alexandru Popa', 'III', 'Electrician'),
+            ('Nicolae Botnaru', 'V', 'Admitent'),
+        ]:
+            cur.execute("INSERT INTO persoane (nume_complet, grupa_securitate, functia) VALUES (%s,%s,%s)", p)
+        for t in [
+            ('Înlocuire contor electric',),
+            ('Verificare instalație electrică',),
+            ('Reparație linie aeriană',),
+            ('Montare branșament',),
+            ('Revizie echipament de măsură',),
+            ('Deconectare/Reconectare consumator',),
+        ]:
+            cur.execute("INSERT INTO tipuri_lucrari (denumire) VALUES (%s)", t)
 
-            INSERT OR IGNORE INTO tipuri_lucrari (denumire) VALUES
-                ('Înlocuire contor electric'),
-                ('Verificare instalație electrică'),
-                ('Reparație linie aeriană'),
-                ('Montare branșament'),
-                ('Revizie echipament de măsură'),
-                ('Deconectare/Reconectare consumator');
-        """)
     db.commit()
+    cur.close()
     db.close()
