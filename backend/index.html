@@ -1164,14 +1164,17 @@ function app() {
       } catch(e) { alert('Eroare: ' + e.message); }
     },
 
-    // ─── PDF ──────────────────────────────────────────────────────────────────
-    downloadPdfLunar() {
-      window.open(`${API}/pdf/lunar?luna=${this.pdfLuna}&an=${this.pdfAn}&token=${this.token}`, '_blank');
-    },
-    downloadPdfFisa(id) {
-      if (!id) return;
-      window.open(`${API}/pdf/fisa/${id}?token=${this.token}`, '_blank');
-    },
+// ─── PDF ──────────────────────────────────────────────────────────────────
+downloadPdfLunar() {
+  const url = `${API}/pdf/lunar?luna=${this.pdfLuna}&an=${this.pdfAn}&token=${this.token}`;
+  window.open(url, '_blank');
+},
+
+downloadPdfFisa(id) {
+  if (!id) return;
+  const url = `${API}/pdf/fisa/${id}?token=${this.token}`;
+  window.open(url, '_blank');
+},
 
     // ─── HELPERS ─────────────────────────────────────────────────────────────
 // Caută aceste funcții și înlocuiește-le:
