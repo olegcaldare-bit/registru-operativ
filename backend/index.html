@@ -1174,14 +1174,31 @@ function app() {
     },
 
     // ─── HELPERS ─────────────────────────────────────────────────────────────
-    fmtDate(v) {
-      if (!v) return '—';
-      try { return new Date(v).toLocaleDateString('ro-RO'); } catch { return v; }
-    },
-    fmtDt(v) {
-      if (!v) return '—';
-      try { return new Date(v).toLocaleString('ro-RO', {dateStyle:'short',timeStyle:'short'}); } catch { return v; }
-    },
+// Caută aceste funcții și înlocuiește-le:
+
+fmtDate(v) {
+  if (!v) return '—';
+  try { 
+    const d = new Date(v);
+    // Forțăm formatul: Zi/Lună/An
+    return d.getDate().toString().padStart(2, '0') + '/' + 
+           (d.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+           d.getFullYear();
+  } catch { return v; }
+},
+
+fmtDt(v) {
+  if (!v) return '—';
+  try { 
+    const d = new Date(v);
+    const dataFmt = d.getDate().toString().padStart(2, '0') + '/' + 
+                    (d.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                    d.getFullYear();
+    const oraFmt = d.getHours().toString().padStart(2, '0') + ':' + 
+                   d.getMinutes().toString().padStart(2, '0');
+    return dataFmt + ' ' + oraFmt;
+  } catch { return v; }
+},
     nowStr() {
       return new Date().toLocaleString('ro-RO', {dateStyle:'short',timeStyle:'short'});
     },
