@@ -27,14 +27,26 @@ security = HTTPBearer()
 async def startup():
     init_db()
 
-# â”€â”€â”€ AUTH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ÄÄÄ RUTA PRINCIPALA (ROOT) ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+# Aceasta ruta previne eroarea 404 pe Render.com
+
+@app.get("/")
+def read_root():
+    return {
+        "status": "online",
+        "service": "Registru Operativ API",
+        "version": "1.0.0",
+        "documentation": "/docs"
+    }
+
+# ÄÄÄ AUTH ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 
 @app.post("/auth/login", response_model=schemas.LoginResponse)
 def login(data: schemas.LoginRequest):
     db = get_db()
     user = crud.authenticate_user(db, data.username, data.password)
     if not user:
-        raise HTTPException(status_code=401, detail="CredenÈ›iale incorecte")
+        raise HTTPException(status_code=401, detail="Creden?iale incorecte")
     token = secrets.token_hex(32)
     crud.save_session(db, token, user["id"])
     return {"token": token, "user": user}
@@ -49,10 +61,10 @@ def get_current_user(creds: HTTPAuthorizationCredentials = Depends(security)):
     db = get_db()
     user = crud.get_session_user(db, creds.credentials)
     if not user:
-        raise HTTPException(status_code=401, detail="Sesiune expiratÄƒ")
+        raise HTTPException(status_code=401, detail="Sesiune expirata")
     return user
 
-# â”€â”€â”€ NOMENCLATOARE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ÄÄÄ NOMENCLATOARE ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 
 @app.get("/nomenclator/persoane")
 def get_persoane(current_user=Depends(get_current_user)):
@@ -108,7 +120,7 @@ def delete_tip_lucrare(id: int, current_user=Depends(get_current_user)):
     crud.delete_tip_lucrare(db, id)
     return {"ok": True}
 
-# â”€â”€â”€ FIÈ˜E â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ÄÄÄ FI?E ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 
 @app.get("/fise")
 def get_fise(luna: Optional[int] = None, an: Optional[int] = None, current_user=Depends(get_current_user)):
@@ -120,7 +132,7 @@ def get_fisa(id: int, current_user=Depends(get_current_user)):
     db = get_db()
     fisa = crud.get_fisa(db, id)
     if not fisa:
-        raise HTTPException(status_code=404, detail="FiÈ™a nu existÄƒ")
+        raise HTTPException(status_code=404, detail="Fi?a nu exista")
     return fisa
 
 @app.post("/fise", response_model=schemas.FisaOut)
@@ -137,9 +149,9 @@ def update_fisa(id: int, data: schemas.FisaCreate, current_user=Depends(get_curr
     db = get_db()
     fisa = crud.get_fisa(db, id)
     if not fisa:
-        raise HTTPException(status_code=404, detail="FiÈ™a nu existÄƒ")
+        raise HTTPException(status_code=404, detail="Fi?a nu exista")
     if fisa["stare"] == "semnat":
-        raise HTTPException(status_code=400, detail="FiÈ™a semnatÄƒ nu poate fi modificatÄƒ")
+        raise HTTPException(status_code=400, detail="Fi?a semnata nu poate fi modificata")
     return crud.update_fisa(db, id, data)
 
 @app.patch("/fise/{id}/anuleaza")
@@ -149,9 +161,9 @@ def anuleaza_fisa(id: int, current_user=Depends(get_current_user)):
     db = get_db()
     fisa = crud.get_fisa(db, id)
     if not fisa:
-        raise HTTPException(status_code=404, detail="FiÈ™a nu existÄƒ")
+        raise HTTPException(status_code=404, detail="Fi?a nu exista")
     if fisa["stare"] == "semnat":
-        raise HTTPException(status_code=400, detail="FiÈ™a semnatÄƒ nu poate fi anulatÄƒ")
+        raise HTTPException(status_code=400, detail="Fi?a semnata nu poate fi anulata")
     return crud.set_stare_fisa(db, id, "anulat")
 
 @app.patch("/fise/{id}/incepe")
@@ -161,9 +173,9 @@ def incepe_lucrarea(id: int, data: schemas.SemnareInceput, current_user=Depends(
     db = get_db()
     fisa = crud.get_fisa(db, id)
     if not fisa:
-        raise HTTPException(status_code=404, detail="FiÈ™a nu existÄƒ")
+        raise HTTPException(status_code=404, detail="Fi?a nu exista")
     if fisa["stare"] != "emis":
-        raise HTTPException(status_code=400, detail="FiÈ™a nu este Ã®n starea corectÄƒ")
+        raise HTTPException(status_code=400, detail="Fi?a nu este in starea corecta")
     return crud.incepe_lucrarea(db, id, current_user["id"], data.confirmat)
 
 @app.patch("/fise/{id}/finalizeaza")
@@ -173,12 +185,12 @@ def finalizeaza_lucrarea(id: int, data: schemas.SemnareFinal, current_user=Depen
     db = get_db()
     fisa = crud.get_fisa(db, id)
     if not fisa:
-        raise HTTPException(status_code=404, detail="FiÈ™a nu existÄƒ")
+        raise HTTPException(status_code=404, detail="Fi?a nu exista")
     if fisa["stare"] != "in_lucru":
-        raise HTTPException(status_code=400, detail="Lucrarea nu a fost Ã®nceputÄƒ")
+        raise HTTPException(status_code=400, detail="Lucrarea nu a fost inceputa")
     return crud.finalizeaza_lucrarea(db, id, current_user["id"], data.confirmat)
 
-# â”€â”€â”€ PDF â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ÄÄÄ PDF ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 
 @app.get("/pdf/lunar")
 def pdf_lunar(luna: int, an: int, current_user=Depends(get_current_user)):
@@ -196,7 +208,7 @@ def pdf_fisa(id: int, current_user=Depends(get_current_user)):
     db = get_db()
     fisa = crud.get_fisa(db, id)
     if not fisa:
-        raise HTTPException(status_code=404, detail="FiÈ™a nu existÄƒ")
+        raise HTTPException(status_code=404, detail="Fi?a nu exista")
     pdf_bytes = generate_fisa_pdf(fisa)
     return StreamingResponse(
         io.BytesIO(pdf_bytes),
@@ -204,7 +216,7 @@ def pdf_fisa(id: int, current_user=Depends(get_current_user)):
         headers={"Content-Disposition": f"inline; filename=fisa_{id}.pdf"}
     )
 
-# â”€â”€â”€ UTILIZATORI (admin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ÄÄÄ UTILIZATORI (admin) ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
 
 @app.get("/utilizatori")
 def get_utilizatori(current_user=Depends(get_current_user)):
